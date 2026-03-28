@@ -1,0 +1,108 @@
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
+.scheduleInfo {
+  background: rgba(124, 106, 247, 0.08);
+  border: 1px solid rgba(124, 106, 247, 0.2);
+  border-radius: 6px;
+  padding: 0.7rem 1rem;
+  font-size: 0.72rem;
+  color: var(--accent);
+  margin-bottom: 1.5rem;
+  letter-spacing: 0.03em;
+}
+
+.formRow {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.formGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.narrow {
+  max-width: 200px;
+}
+
+.label {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.65rem 0.9rem;
+  color: var(--text);
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+.input option {
+  background: var(--surface);
+}
+
+.textarea {
+  composes: input;
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.btnPrimary {
+  margin-top: 0.5rem;
+  padding: 0.7rem 1.8rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #6b59e8;
+  transform: translateY(-1px);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .formRow {
+    flex-direction: column;
+  }
+  .narrow {
+    max-width: 100%;
+  }
+}

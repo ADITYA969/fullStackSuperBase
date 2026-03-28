@@ -1,4 +1,6 @@
-import { Note, STAGES, REVISION_DAYS } from '../lib/notes'
+import { useState } from 'react'
+import { Note, REVISION_SCHEDULE, DIFFICULTY_LABELS, DIFFICULTY_COLORS, getStageLabel, isMastered } from '../lib/notes'
+import type { Difficulty } from '../lib/notes'
 import styles from './NoteCard.module.css'
 
 interface Props {
@@ -9,7 +11,13 @@ interface Props {
 }
 
 export default function NoteCard({ note, onRecalled, onDelete, showRecallButton }: Props) {
-  const isMastered = note.stage >= REVISION_DAYS.length
+  const [revealed, setRevealed] = useState(false)
+
+  const mastered = isMastered(note)
+  const difficulty = (note.difficulty || 'medium') as Difficulty
+  const schedule = REVISION_SCHEDULE[difficulty]
+  const diffColor = DIFFICULTY_COLORS[difficulty]
+
   const isOverdue = note.next_revision && new Date(note.next_revision) < new Date()
   const daysUntil = note.next_revision
     ? Math.ceil((new Date(note.next_revision).getTime() - Date.now()) / 86400000)
@@ -22,49 +30,68 @@ export default function NoteCard({ note, onRecalled, onDelete, showRecallButton 
     return `📅 Due in ${daysUntil}d`
   }
 
-  function getDueClass() {
-    if (isOverdue) return styles.tagOverdue
-    return styles.tagDue
-  }
-
   return (
     <div className={styles.card}>
       <div className={styles.body}>
-        <div className={styles.title}>{note.title}</div>
-        <div className={styles.summary}>
-          {note.summary.substring(0, 180)}{note.summary.length > 180 ? '…' : ''}
+
+        {/* Title row */}
+        <div className={styles.titleRow}>
+          <div className={styles.title}>{note.title}</div>
+          <span
+            className={styles.diffBadge}
+            style={{ color: diffColor, borderColor: diffColor + '55', background: diffColor + '15' }}
+          >
+            {DIFFICULTY_LABELS[difficulty]}
+          </span>
         </div>
 
+        {/* Answer / Summary — hidden until revealed */}
+        <div className={styles.answerBlock}>
+          {revealed ? (
+            <div className={styles.summary}>{note.summary}</div>
+          ) : (
+            <button className={styles.showBtn} onClick={() => setRevealed(true)}>
+              👁 Show Answer
+            </button>
+          )}
+          {revealed && (
+            <button className={styles.hideBtn} onClick={() => setRevealed(false)}>
+              Hide
+            </button>
+          )}
+        </div>
+
+        {/* Meta tags */}
         <div className={styles.meta}>
           <span className={styles.tagCategory}>{note.category}</span>
-
-          {isMastered
+          {mastered
             ? <span className={styles.tagMastered}>🏆 Mastered</span>
-            : <span className={styles.tagStage}>{STAGES[note.stage]}</span>
+            : <span className={styles.tagStage}>{getStageLabel(difficulty, note.stage)}</span>
           }
-
-          {!isMastered && note.next_revision && (
-            <span className={`${styles.tag} ${getDueClass()}`}>
+          {!mastered && note.next_revision && (
+            <span className={`${styles.tag} ${isOverdue ? styles.tagOverdue : styles.tagDue}`}>
               {getDueLabel()}
             </span>
           )}
-
-          {note.source && (
-            <span className={styles.source}>📖 {note.source}</span>
-          )}
+          {note.source && <span className={styles.source}>📖 {note.source}</span>}
         </div>
 
         {/* Revision timeline */}
-        {!isMastered && (
+        {!mastered && (
           <div className={styles.timeline}>
-            {['Learn', '1d', '3d', '7d', '14d', '21d'].map((label, i) => {
+            {['Learn', ...schedule.map(d => `${d}d`)].map((label, i) => {
               const isDone = i <= note.stage
               const isActive = i === note.stage + 1
               return (
                 <div key={i} className={styles.tlItem}>
-                  <div className={`${styles.tlNode} ${isDone ? styles.done : ''} ${isActive ? styles.active : ''}`} />
-                  <div className={`${styles.tlLabel} ${isActive ? styles.tlActive : ''}`}>{label}</div>
-                  {i < 5 && <div className={`${styles.tlLine} ${isDone ? styles.done : ''}`} />}
+                  <div
+                    className={`${styles.tlNode} ${isDone ? styles.done : ''} ${isActive ? styles.active : ''}`}
+                    style={isActive ? { background: diffColor, borderColor: diffColor, boxShadow: `0 0 6px ${diffColor}` } : {}}
+                  />
+                  <div className={`${styles.tlLabel} ${isActive ? styles.tlActive : ''}`}
+                    style={isActive ? { color: diffColor } : {}}
+                  >{label}</div>
+                  {i < schedule.length && <div className={`${styles.tlLine} ${isDone ? styles.done : ''}`} />}
                 </div>
               )
             })}
@@ -72,16 +99,13 @@ export default function NoteCard({ note, onRecalled, onDelete, showRecallButton 
         )}
       </div>
 
+      {/* Actions */}
       <div className={styles.actions}>
-        {showRecallButton && !isMastered && onRecalled && (
-          <button className={styles.btnSuccess} onClick={onRecalled}>
-            ✓ Recalled
-          </button>
+        {showRecallButton && !mastered && onRecalled && (
+          <button className={styles.btnSuccess} onClick={onRecalled}>✓ Recalled</button>
         )}
         {onDelete && (
-          <button className={styles.btnGhost} onClick={onDelete}>
-            Delete
-          </button>
+          <button className={styles.btnGhost} onClick={onDelete}>Delete</button>
         )}
       </div>
     </div>

@@ -10,10 +10,7 @@
   animation: slideIn 0.3s ease;
   transition: border-color 0.2s;
 }
-
-.card:hover {
-  border-color: var(--accent);
-}
+.card:hover { border-color: var(--accent); }
 
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(-6px); }
@@ -22,23 +19,92 @@
 
 .body { flex: 1; min-width: 0; }
 
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .title {
   font-family: 'Playfair Display', serif;
   font-size: 1rem;
   font-weight: 700;
-  margin-bottom: 0.35rem;
+}
+
+.diffBadge {
+  padding: 0.2rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  border: 1px solid;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+/* Answer block */
+.answerBlock {
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.showBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1.1rem;
+  background: rgba(124, 106, 247, 0.1);
+  border: 1px dashed rgba(124, 106, 247, 0.4);
+  border-radius: 6px;
+  color: var(--accent);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: fit-content;
+}
+.showBtn:hover {
+  background: rgba(124, 106, 247, 0.18);
+  border-style: solid;
 }
 
 .summary {
-  font-size: 0.78rem;
-  color: var(--muted);
-  line-height: 1.6;
-  margin-bottom: 0.7rem;
+  font-size: 0.82rem;
+  color: var(--text);
+  line-height: 1.7;
+  background: rgba(255,255,255,0.03);
+  border-left: 2px solid var(--accent);
+  padding: 0.75rem 1rem;
+  border-radius: 0 6px 6px 0;
+  animation: reveal 0.25s ease;
 }
 
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hideBtn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+  width: fit-content;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.hideBtn:hover { color: var(--text); }
+
+/* Meta */
 .meta {
   display: flex;
   gap: 0.5rem;
@@ -105,8 +171,10 @@
 .timeline {
   display: flex;
   align-items: flex-start;
-  gap: 0;
   margin-top: 0.5rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
 }
 
 .tlItem {
@@ -114,6 +182,7 @@
   flex-direction: column;
   align-items: center;
   position: relative;
+  flex-shrink: 0;
 }
 
 .tlNode {
@@ -125,42 +194,26 @@
   flex-shrink: 0;
   z-index: 1;
 }
-
-.tlNode.done {
-  background: var(--accent3);
-  border-color: var(--accent3);
-}
-
-.tlNode.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  box-shadow: 0 0 6px var(--accent);
-}
+.tlNode.done { background: var(--accent3); border-color: var(--accent3); }
+.tlNode.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 6px var(--accent); }
 
 .tlLine {
   position: absolute;
   top: 4px;
   left: 10px;
-  width: 36px;
+  width: 32px;
   height: 1px;
   background: var(--border);
-  z-index: 0;
 }
-
-.tlLine.done {
-  background: var(--accent3);
-}
+.tlLine.done { background: var(--accent3); }
 
 .tlLabel {
-  font-size: 0.58rem;
+  font-size: 0.55rem;
   color: var(--muted);
   margin-top: 4px;
   white-space: nowrap;
 }
-
-.tlActive {
-  color: var(--accent);
-}
+.tlActive { color: var(--accent); }
 
 /* Actions */
 .actions {
@@ -183,10 +236,7 @@
   white-space: nowrap;
   transition: opacity 0.2s;
 }
-
-.btnSuccess:hover {
-  opacity: 0.85;
-}
+.btnSuccess:hover { opacity: 0.85; }
 
 .btnGhost {
   padding: 0.4rem 1rem;
@@ -200,17 +250,9 @@
   white-space: nowrap;
   transition: all 0.2s;
 }
-
-.btnGhost:hover {
-  border-color: var(--danger);
-  color: var(--danger);
-}
+.btnGhost:hover { border-color: var(--danger); color: var(--danger); }
 
 @media (max-width: 600px) {
-  .card {
-    grid-template-columns: 1fr;
-  }
-  .actions {
-    flex-direction: row;
-  }
+  .card { grid-template-columns: 1fr; }
+  .actions { flex-direction: row; }
 }

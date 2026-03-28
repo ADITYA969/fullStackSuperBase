@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { addNote } from '../lib/notes'
+import { addNote, Difficulty, REVISION_SCHEDULE } from '../lib/notes'
 import toast from 'react-hot-toast'
 import styles from './AddNote.module.css'
 
@@ -7,14 +7,13 @@ interface Props {
   onSaved: () => void
 }
 
-const CATEGORIES = [
-  'Engineering',
-  'Finance / Markets',
-  'System Design',
-  'DSA',
-  'Books',
-  'Other',
-]
+const CATEGORIES = ['Engineering', 'Finance / Markets', 'System Design', 'DSA', 'Books', 'Other']
+
+const DIFFICULTY_INFO = {
+  easy:   { label: '🟢 Easy',   desc: 'Already familiar — light refreshers', color: '#6af7c4' },
+  medium: { label: '🟡 Medium', desc: 'New concept — standard schedule',      color: '#f7d96a' },
+  hard:   { label: '🔴 Hard',   desc: 'Complex topic — intensive repetition', color: '#f76a6a' },
+}
 
 export default function AddNote({ onSaved }: Props) {
   const [title, setTitle] = useState('')
@@ -22,7 +21,10 @@ export default function AddNote({ onSaved }: Props) {
   const [category, setCategory] = useState('Engineering')
   const [source, setSource] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [difficulty, setDifficulty] = useState<Difficulty>('medium')
   const [saving, setSaving] = useState(false)
+
+  const schedule = REVISION_SCHEDULE[difficulty]
 
   async function handleSave() {
     if (!title.trim()) { toast.error('Please enter a title'); return }
@@ -35,13 +37,15 @@ export default function AddNote({ onSaved }: Props) {
         summary: summary.trim(),
         category,
         source: source.trim() || undefined,
+        difficulty,
         learnedDate: new Date(date),
       })
-      toast.success(`✅ "${title}" saved! Revisions scheduled at day 1, 3, 7, 14, 21.`)
+      toast.success(`✅ Saved! Revisions scheduled at day ${schedule.join(', ')}.`)
       setTitle('')
       setSummary('')
       setSource('')
       setDate(new Date().toISOString().split('T')[0])
+      setDifficulty('medium')
       onSaved()
     } catch {
       toast.error('Failed to save note')
@@ -54,8 +58,25 @@ export default function AddNote({ onSaved }: Props) {
     <div className={styles.section}>
       <div className={styles.sectionTitle}>📝 Capture What You Learned</div>
 
-      <div className={styles.scheduleInfo}>
-        🗓 Revision reminders will be sent automatically on Day 1 · 3 · 7 · 14 · 21
+      {/* Difficulty selector */}
+      <div className={styles.diffRow}>
+        {(Object.entries(DIFFICULTY_INFO) as [Difficulty, typeof DIFFICULTY_INFO.easy][]).map(([key, info]) => (
+          <button
+            key={key}
+            className={`${styles.diffBtn} ${difficulty === key ? styles.diffActive : ''}`}
+            style={difficulty === key ? { borderColor: info.color, color: info.color, background: info.color + '15' } : {}}
+            onClick={() => setDifficulty(key)}
+          >
+            <span className={styles.diffLabel}>{info.label}</span>
+            <span className={styles.diffDesc}>{info.desc}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Schedule preview */}
+      <div className={styles.scheduleInfo} style={{ borderColor: DIFFICULTY_INFO[difficulty].color + '44', color: DIFFICULTY_INFO[difficulty].color }}>
+        🗓 Revision reminders on Day {schedule.join(' · ')}
+        <span className={styles.scheduleCount}> · {schedule.length} repetitions</span>
       </div>
 
       <div className={styles.formRow}>
@@ -71,11 +92,7 @@ export default function AddNote({ onSaved }: Props) {
         </div>
         <div className={`${styles.formGroup} ${styles.narrow}`}>
           <label className={styles.label}>Category</label>
-          <select
-            className={styles.input}
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-          >
+          <select className={styles.input} value={category} onChange={e => setCategory(e.target.value)}>
             {CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
         </div>
@@ -88,7 +105,7 @@ export default function AddNote({ onSaved }: Props) {
             className={styles.textarea}
             value={summary}
             onChange={e => setSummary(e.target.value)}
-            placeholder="Write the key insight or concept. Be concise — this is what you'll review later."
+            placeholder="Write the key insight or concept. This will be hidden behind 'Show Answer' during revision."
           />
         </div>
       </div>
@@ -106,20 +123,11 @@ export default function AddNote({ onSaved }: Props) {
         </div>
         <div className={`${styles.formGroup} ${styles.narrow}`}>
           <label className={styles.label}>Date Learned</label>
-          <input
-            className={styles.input}
-            type="date"
-            value={date}
-            onChange={e => setDate(e.target.value)}
-          />
+          <input className={styles.input} type="date" value={date} onChange={e => setDate(e.target.value)} />
         </div>
       </div>
 
-      <button
-        className={styles.btnPrimary}
-        onClick={handleSave}
-        disabled={saving}
-      >
+      <button className={styles.btnPrimary} onClick={handleSave} disabled={saving}>
         {saving ? 'Saving...' : 'Save & Schedule Revisions →'}
       </button>
     </div>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { getAllNotes, deleteNote, markRecalled, Note, REVISION_DAYS, STAGES } from '../lib/notes'
+import { getAllNotes, deleteNote, markRecalled, Note, REVISION_SCHEDULE, getStageLabel, isMastered } from '../lib/notes'
+import type { Difficulty } from '../lib/notes'
 import NoteCard from './NoteCard'
 import toast from 'react-hot-toast'
 import styles from './AllNotes.module.css'
@@ -36,8 +37,11 @@ export default function AllNotes() {
   async function handleRecalled(note: Note) {
     try {
       await markRecalled(note)
-      const isMastered = note.stage + 1 >= REVISION_DAYS.length
-      toast.success(isMastered ? `🏆 Mastered!` : `✅ Advanced to ${STAGES[note.stage + 1]}!`)
+      const difficulty = (note.difficulty || 'medium') as Difficulty
+      const schedule = REVISION_SCHEDULE[difficulty]
+      const nextStage = note.stage + 1
+      const mastered = nextStage >= schedule.length
+      toast.success(mastered ? `🏆 Mastered!` : `✅ Advanced to ${getStageLabel(difficulty, nextStage)}!`)
       load()
     } catch {
       toast.error('Failed to update note')
@@ -51,9 +55,9 @@ export default function AllNotes() {
       n.category.toLowerCase().includes(search.toLowerCase())
 
     const matchStage =
-      filterStage === 'all' ? true :
-      filterStage === 'mastered' ? n.stage >= REVISION_DAYS.length :
-      filterStage === 'active' ? n.stage < REVISION_DAYS.length :
+      filterStage === 'all'      ? true :
+      filterStage === 'mastered' ? isMastered(n) :
+      filterStage === 'active'   ? !isMastered(n) :
       true
 
     return matchSearch && matchStage
@@ -68,7 +72,6 @@ export default function AllNotes() {
 
   return (
     <div>
-      {/* Search + Filter bar */}
       <div className={styles.toolbar}>
         <input
           className={styles.search}
@@ -102,7 +105,7 @@ export default function AllNotes() {
               note={note}
               onRecalled={() => handleRecalled(note)}
               onDelete={() => handleDelete(note.id)}
-              showRecallButton={note.stage < REVISION_DAYS.length}
+              showRecallButton={!isMastered(note)}
             />
           ))}
         </div>

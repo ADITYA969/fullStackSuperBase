@@ -1,7 +1,40 @@
 import { supabase } from './supabase'
 
-export const REVISION_DAYS = [1, 3, 7, 14, 21]
-export const STAGES = ['Day 1', 'Day 3', 'Day 7', 'Day 14', 'Day 21', 'Mastered']
+export type Difficulty = 'easy' | 'medium' | 'hard'
+
+
+export const REVISION_SCHEDULE: Record<Difficulty, number[]> = {
+  easy:   [1, 3, 7, 14, 30],
+  medium: [1, 2, 5, 7, 14, 21, 30],
+  hard:   [1, 2, 4, 7, 14, 21, 30],
+}
+
+export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
+  easy:   '🟢 Easy',
+  medium: '🟡 Medium',
+  hard:   '🔴 Hard',
+}
+
+export const DIFFICULTY_COLORS: Record<Difficulty, string> = {
+  easy:   '#6af7c4',
+  medium: '#f7d96a',
+  hard:   '#f76a6a',
+}
+
+export function getSchedule(difficulty: Difficulty): number[] {
+  return REVISION_SCHEDULE[difficulty]
+}
+
+export function getStageLabel(difficulty: Difficulty, stage: number): string {
+  const schedule = REVISION_SCHEDULE[difficulty]
+  if (stage >= schedule.length) return 'Mastered'
+  return `Day ${schedule[stage]}`
+}
+
+export function isMastered(note: Note): boolean {
+  const schedule = REVISION_SCHEDULE[(note.difficulty as Difficulty)] || REVISION_SCHEDULE.medium
+  return note.stage >= schedule.length
+}
 
 export interface Note {
   id: string
@@ -9,6 +42,7 @@ export interface Note {
   summary: string
   category: string
   source?: string
+  difficulty: Difficulty
   learned_date: string
   next_revision: string | null
   stage: number
@@ -27,8 +61,11 @@ export async function addNote(note: {
   summary: string
   category: string
   source?: string
+  difficulty: Difficulty
   learnedDate: Date
 }): Promise<Note> {
+  const schedule = REVISION_SCHEDULE[note.difficulty]
+
   const { data, error } = await supabase
     .from('notes')
     .insert({
@@ -36,8 +73,9 @@ export async function addNote(note: {
       summary: note.summary,
       category: note.category,
       source: note.source || null,
+      difficulty: note.difficulty,
       learned_date: note.learnedDate.toISOString(),
-      next_revision: addDays(note.learnedDate, REVISION_DAYS[0]).toISOString(),
+      next_revision: addDays(note.learnedDate, schedule[0]).toISOString(),
       stage: 0,
     })
     .select()
@@ -45,7 +83,7 @@ export async function addNote(note: {
 
   if (error) throw error
 
-  const jobs = REVISION_DAYS.map((days, index) => ({
+  const jobs = schedule.map((days, index) => ({
     note_id: data.id,
     scheduled_for: addDays(note.learnedDate, days).toISOString(),
     stage: index,
@@ -59,17 +97,18 @@ export async function addNote(note: {
 }
 
 export async function markRecalled(note: Note): Promise<void> {
+  const schedule = REVISION_SCHEDULE[(note.difficulty as Difficulty)] || REVISION_SCHEDULE.medium
   const nextStage = note.stage + 1
-  const isMastered = nextStage >= REVISION_DAYS.length
+  const mastered = nextStage >= schedule.length
 
   const { error } = await supabase
     .from('notes')
     .update({
       stage: nextStage,
       revision_history: [...note.revision_history, new Date().toISOString()],
-      next_revision: isMastered
+      next_revision: mastered
         ? null
-        : addDays(new Date(), REVISION_DAYS[nextStage]).toISOString(),
+        : addDays(new Date(), schedule[nextStage]).toISOString(),
     })
     .eq('id', note.id)
 
@@ -91,11 +130,10 @@ export async function getDueNotes(): Promise<Note[]> {
     .from('notes')
     .select('*')
     .lte('next_revision', new Date().toISOString())
-    .lt('stage', REVISION_DAYS.length)
     .order('next_revision', { ascending: true })
 
   if (error) throw error
-  return data
+  return data.filter(n => !isMastered(n))
 }
 
 export async function deleteNote(id: string): Promise<void> {

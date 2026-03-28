@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { getAllNotes, getDueNotes, markRecalled, deleteNote, Note, STAGES, REVISION_DAYS } from '../lib/notes'
+import { getAllNotes, getDueNotes, markRecalled, deleteNote, Note, REVISION_SCHEDULE, getStageLabel, isMastered } from '../lib/notes'
+import type { Difficulty } from '../lib/notes'
 import toast from 'react-hot-toast'
 import NoteCard from './NoteCard'
 import styles from './Dashboard.module.css'
@@ -18,7 +19,7 @@ export default function Dashboard({ onAddNote }: Props) {
       const [all, due] = await Promise.all([getAllNotes(), getDueNotes()])
       setAllNotes(all)
       setDueNotes(due)
-    } catch (e) {
+    } catch {
       toast.error('Failed to load notes')
     } finally {
       setLoading(false)
@@ -30,10 +31,13 @@ export default function Dashboard({ onAddNote }: Props) {
   async function handleRecalled(note: Note) {
     try {
       await markRecalled(note)
-      const isMastered = note.stage + 1 >= REVISION_DAYS.length
-      toast.success(isMastered
+      const difficulty = (note.difficulty || 'medium') as Difficulty
+      const schedule = REVISION_SCHEDULE[difficulty]
+      const nextStage = note.stage + 1
+      const mastered = nextStage >= schedule.length
+      toast.success(mastered
         ? `🏆 "${note.title}" mastered!`
-        : `✅ Advanced to ${STAGES[note.stage + 1]}!`
+        : `✅ Advanced to ${getStageLabel(difficulty, nextStage)}!`
       )
       load()
     } catch {
@@ -51,9 +55,9 @@ export default function Dashboard({ onAddNote }: Props) {
     }
   }
 
-  const mastered = allNotes.filter(n => n.stage >= REVISION_DAYS.length)
+  const mastered = allNotes.filter(n => isMastered(n))
   const upcoming = allNotes.filter(n => {
-    if (!n.next_revision || n.stage >= REVISION_DAYS.length) return false
+    if (!n.next_revision || isMastered(n)) return false
     const diff = new Date(n.next_revision).getTime() - Date.now()
     return diff > 0 && diff <= 7 * 24 * 60 * 60 * 1000
   })
@@ -67,7 +71,6 @@ export default function Dashboard({ onAddNote }: Props) {
 
   return (
     <div>
-      {/* Stats */}
       <div className={styles.statsBar}>
         <div className={`${styles.statCard} ${styles.purple}`}>
           <div className={styles.statLabel}>Total Notes</div>
@@ -87,7 +90,6 @@ export default function Dashboard({ onAddNote }: Props) {
         </div>
       </div>
 
-      {/* Revision Queue */}
       <div className={styles.queueHeader}>
         <div className={styles.sectionTitle}>📬 Revision Queue</div>
       </div>

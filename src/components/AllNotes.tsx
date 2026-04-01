@@ -5,11 +5,23 @@ import NoteCard from './NoteCard'
 import toast from 'react-hot-toast'
 import styles from './AllNotes.module.css'
 
+type DateFilter = 'all' | 'today' | 'yesterday'
+type StageFilter = 'all' | 'active' | 'mastered'
+
+function isSameDay(date: Date, target: Date): boolean {
+  return (
+    date.getFullYear() === target.getFullYear() &&
+    date.getMonth() === target.getMonth() &&
+    date.getDate() === target.getDate()
+  )
+}
+
 export default function AllNotes() {
   const [notes, setNotes] = useState<Note[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [filterStage, setFilterStage] = useState('all')
+  const [stageFilter, setStageFilter] = useState<StageFilter>('all')
+  const [dateFilter, setDateFilter] = useState<DateFilter>('all')
 
   async function load() {
     try {
@@ -48,20 +60,36 @@ export default function AllNotes() {
     }
   }
 
+  const today = new Date()
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+
   const filtered = notes.filter(n => {
+    const learnedDate = new Date(n.learned_date)
+
+    const matchDate =
+      dateFilter === 'all'       ? true :
+      dateFilter === 'today'     ? isSameDay(learnedDate, today) :
+      dateFilter === 'yesterday' ? isSameDay(learnedDate, yesterday) :
+      true
+
+    const matchStage =
+      stageFilter === 'all'      ? true :
+      stageFilter === 'mastered' ? isMastered(n) :
+      stageFilter === 'active'   ? !isMastered(n) :
+      true
+
     const matchSearch =
       n.title.toLowerCase().includes(search.toLowerCase()) ||
       n.summary.toLowerCase().includes(search.toLowerCase()) ||
       n.category.toLowerCase().includes(search.toLowerCase())
 
-    const matchStage =
-      filterStage === 'all'      ? true :
-      filterStage === 'mastered' ? isMastered(n) :
-      filterStage === 'active'   ? !isMastered(n) :
-      true
-
-    return matchSearch && matchStage
+    return matchDate && matchStage && matchSearch
   })
+
+  // Count helpers for badges
+  const todayCount = notes.filter(n => isSameDay(new Date(n.learned_date), today)).length
+  const yesterdayCount = notes.filter(n => isSameDay(new Date(n.learned_date), yesterday)).length
 
   if (loading) return (
     <div className={styles.loading}>
@@ -72,6 +100,27 @@ export default function AllNotes() {
 
   return (
     <div>
+      {/* Date filter pills */}
+      <div className={styles.dateFilters}>
+        {([
+          { key: 'all',       label: 'All Time',  count: notes.length },
+          { key: 'today',     label: 'Today',     count: todayCount },
+          { key: 'yesterday', label: 'Yesterday', count: yesterdayCount },
+        ] as { key: DateFilter; label: string; count: number }[]).map(({ key, label, count }) => (
+          <button
+            key={key}
+            className={`${styles.datePill} ${dateFilter === key ? styles.datePillActive : ''}`}
+            onClick={() => setDateFilter(key)}
+          >
+            {label}
+            <span className={`${styles.pillCount} ${dateFilter === key ? styles.pillCountActive : ''}`}>
+              {count}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Search + stage filter toolbar */}
       <div className={styles.toolbar}>
         <input
           className={styles.search}
@@ -82,20 +131,30 @@ export default function AllNotes() {
         />
         <select
           className={styles.filter}
-          value={filterStage}
-          onChange={e => setFilterStage(e.target.value)}
+          value={stageFilter}
+          onChange={e => setStageFilter(e.target.value as StageFilter)}
         >
-          <option value="all">All Notes</option>
+          <option value="all">All Stages</option>
           <option value="active">In Progress</option>
           <option value="mastered">Mastered</option>
         </select>
-        <span className={styles.count}>{filtered.length} note{filtered.length !== 1 ? 's' : ''}</span>
+        <span className={styles.count}>
+          {filtered.length} note{filtered.length !== 1 ? 's' : ''}
+        </span>
       </div>
 
       {filtered.length === 0 ? (
         <div className={styles.emptyState}>
-          <div>🔍</div>
-          <div>{search ? `No notes matching "${search}"` : 'No notes yet'}</div>
+          <div>
+            {dateFilter === 'today'     ? '📅' :
+             dateFilter === 'yesterday' ? '📆' : '🔍'}
+          </div>
+          <div>
+            {dateFilter === 'today'     ? "You haven't added any notes today yet" :
+             dateFilter === 'yesterday' ? 'No notes from yesterday' :
+             search                     ? `No notes matching "${search}"` :
+             'No notes yet'}
+          </div>
         </div>
       ) : (
         <div className={styles.list}>

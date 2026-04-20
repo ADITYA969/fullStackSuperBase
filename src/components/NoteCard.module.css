@@ -8,9 +8,10 @@
   gap: 1rem;
   align-items: start;
   animation: slideIn 0.3s ease;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.3s;
 }
 .card:hover { border-color: var(--accent); }
+.cardForgot { border-color: var(--danger) !important; background: rgba(247,106,106,0.04); }
 
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(-6px); }
@@ -34,6 +35,13 @@
   font-weight: 700;
 }
 
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
 .diffBadge {
   padding: 0.2rem 0.75rem;
   border-radius: 20px;
@@ -41,7 +49,17 @@
   letter-spacing: 0.06em;
   border: 1px solid;
   white-space: nowrap;
-  flex-shrink: 0;
+}
+
+.forgotBadge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+  background: rgba(247, 106, 106, 0.12);
+  color: var(--danger);
+  border: 1px solid rgba(247, 106, 106, 0.3);
+  white-space: nowrap;
 }
 
 /* Answer block */
@@ -68,10 +86,7 @@
   transition: all 0.2s;
   width: fit-content;
 }
-.showBtn:hover {
-  background: rgba(124, 106, 247, 0.18);
-  border-style: solid;
-}
+.showBtn:hover { background: rgba(124, 106, 247, 0.18); border-style: solid; }
 
 .summary {
   font-size: 0.82rem;
@@ -120,35 +135,30 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-
 .tagCategory {
   composes: tag;
   background: rgba(124, 106, 247, 0.15);
   color: var(--accent);
   border: 1px solid rgba(124, 106, 247, 0.3);
 }
-
 .tagStage {
   composes: tag;
   background: rgba(247, 162, 106, 0.12);
   color: var(--accent2);
   border: 1px solid rgba(247, 162, 106, 0.3);
 }
-
 .tagMastered {
   composes: tag;
   background: rgba(106, 247, 196, 0.12);
   color: var(--accent3);
   border: 1px solid rgba(106, 247, 196, 0.25);
 }
-
 .tagDue {
   composes: tag;
   background: rgba(247, 217, 106, 0.12);
   color: var(--warn);
   border: 1px solid rgba(247, 217, 106, 0.25);
 }
-
 .tagOverdue {
   composes: tag;
   background: rgba(247, 106, 106, 0.12);
@@ -156,27 +166,21 @@
   border: 1px solid rgba(247, 106, 106, 0.3);
   animation: pulse 2s infinite;
 }
-
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.6; }
 }
 
-.source {
-  font-size: 0.65rem;
-  color: var(--muted);
-}
+.source { font-size: 0.65rem; color: var(--muted); }
 
 /* Timeline */
 .timeline {
   display: flex;
   align-items: flex-start;
   margin-top: 0.5rem;
-  flex-wrap: nowrap;
   overflow-x: auto;
   padding-bottom: 4px;
 }
-
 .tlItem {
   display: flex;
   flex-direction: column;
@@ -184,29 +188,23 @@
   position: relative;
   flex-shrink: 0;
 }
-
 .tlNode {
-  width: 10px;
-  height: 10px;
+  width: 10px; height: 10px;
   border-radius: 50%;
   border: 2px solid var(--border);
   background: var(--bg);
   flex-shrink: 0;
   z-index: 1;
 }
-.tlNode.done { background: var(--accent3); border-color: var(--accent3); }
-.tlNode.active { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 6px var(--accent); }
-
+.tlNode.done   { background: var(--accent3); border-color: var(--accent3); }
+.tlNode.active { background: var(--accent);  border-color: var(--accent); box-shadow: 0 0 6px var(--accent); }
 .tlLine {
   position: absolute;
-  top: 4px;
-  left: 10px;
-  width: 32px;
-  height: 1px;
+  top: 4px; left: 10px;
+  width: 32px; height: 1px;
   background: var(--border);
 }
 .tlLine.done { background: var(--accent3); }
-
 .tlLabel {
   font-size: 0.55rem;
   color: var(--muted);
@@ -238,6 +236,47 @@
 }
 .btnSuccess:hover { opacity: 0.85; }
 
+.btnForgot {
+  padding: 0.4rem 1rem;
+  background: rgba(247, 106, 106, 0.12);
+  color: var(--danger);
+  border: 1px solid rgba(247, 106, 106, 0.35);
+  border-radius: 6px;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.btnForgot:hover { background: rgba(247, 106, 106, 0.22); }
+
+.btnUndo {
+  padding: 0.4rem 1rem;
+  background: rgba(247, 162, 106, 0.15);
+  color: var(--accent2);
+  border: 1px solid rgba(247, 162, 106, 0.4);
+  border-radius: 6px;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: all 0.2s;
+  animation: fadeIn 0.3s ease;
+}
+.btnUndo:hover { background: rgba(247, 162, 106, 0.25); }
+
+.btnUndoGhost {
+  padding: 0.4rem 0.6rem;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btnUndoGhost:hover { border-color: var(--accent2); color: var(--accent2); }
+
 .btnGhost {
   padding: 0.4rem 1rem;
   background: transparent;
@@ -252,7 +291,163 @@
 }
 .btnGhost:hover { border-color: var(--danger); color: var(--danger); }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
 @media (max-width: 600px) {
   .card { grid-template-columns: 1fr; }
-  .actions { flex-direction: row; }
+  .actions { flex-direction: row; flex-wrap: wrap; }
 }
+
+/* Edit mode */
+.cardEditing {
+  border-color: var(--accent) !important;
+  background: rgba(124, 106, 247, 0.04);
+}
+
+.editHeader {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+
+.editRow {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.editGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 140px;
+}
+
+.editGroupNarrow {
+  width: 160px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.editLabel {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.editInput {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.55rem 0.8rem;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.editInput:focus { border-color: var(--accent); }
+.editInput option { background: var(--surface); }
+
+.editTextarea {
+  composes: editInput;
+  min-height: 90px;
+  resize: vertical;
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+
+.editActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.btnSave {
+  padding: 0.5rem 1.2rem;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btnSave:hover:not(:disabled) { background: #6b59e8; }
+.btnSave:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btnCancel {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btnCancel:hover { color: var(--text); border-color: var(--muted); }
+
+.btnEdit {
+  padding: 0.4rem 0.6rem;
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.btnEdit:hover { border-color: var(--accent); color: var(--accent); }
+
+.cardSnoozed {
+  border-color: var(--warn) !important;
+  background: rgba(247, 217, 106, 0.03);
+}
+
+.snoozeBanner {
+  font-size: 0.72rem;
+  color: var(--warn);
+  background: rgba(247, 217, 106, 0.08);
+  border: 1px solid rgba(247, 217, 106, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+  animation: reveal 0.25s ease;
+}
+
+.btnSnooze {
+  padding: 0.4rem 0.8rem;
+  background: rgba(247, 217, 106, 0.1);
+  color: var(--warn);
+  border: 1px solid rgba(247, 217, 106, 0.3);
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btnSnooze:hover:not(:disabled) { background: rgba(247, 217, 106, 0.18); }
+.btnSnooze:disabled { opacity: 0.5; cursor: not-allowed; }

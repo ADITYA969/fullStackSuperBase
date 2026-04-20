@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getAllNotes, getDueNotes, markRecalled, deleteNote, Note, REVISION_SCHEDULE, getStageLabel, isMastered } from '../lib/notes'
+import { getAllNotes, getDueNotes, markRecalled, markForgot, undoRecall, deleteNote, Note, REVISION_SCHEDULE, getStageLabel, isMastered } from '../lib/notes'
 import type { Difficulty } from '../lib/notes'
 import toast from 'react-hot-toast'
 import NoteCard from './NoteCard'
@@ -42,6 +42,35 @@ export default function Dashboard({ onAddNote }: Props) {
       load()
     } catch {
       toast.error('Failed to update note')
+    }
+  }
+
+  async function handleForgot(note: Note) {
+    try {
+      await markForgot(note)
+      toast(`😔 Noted! "${note.title}" reset to Day 1 — reminder tomorrow`, {
+        icon: '🔄',
+        style: {
+          background: '#12121a',
+          color: '#f76a6a',
+          border: '1px solid rgba(247,106,106,0.3)',
+          fontFamily: 'JetBrains Mono, monospace',
+          fontSize: '13px',
+        }
+      })
+      load()
+    } catch {
+      toast.error('Failed to mark as forgot')
+    }
+  }
+
+  async function handleUndo(note: Note) {
+    try {
+      await undoRecall(note)
+      toast.success(`↩ Reverted "${note.title}" back one stage`)
+      load()
+    } catch {
+      toast.error('Failed to undo')
     }
   }
 
@@ -109,6 +138,10 @@ export default function Dashboard({ onAddNote }: Props) {
               key={note.id}
               note={note}
               onRecalled={() => handleRecalled(note)}
+              onForgot={() => handleForgot(note)}
+              onUndo={() => handleUndo(note)}
+              onEdited={load}
+              onSnoozed={load}
               onDelete={() => handleDelete(note.id)}
               showRecallButton
             />
